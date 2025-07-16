@@ -1,61 +1,89 @@
-// script.js
-const $ = id => document.getElementById(id);
-
-const steelData = {
-  S235: { ys: [235,225,215], ts: [[360,510],[360,510],[340,490]], A: [26,26,25],
-    chem: { c:0.22, si:0.55, mn:1.6, p:0.045, s:0.045, n:0.014 } },
-  S275: { ys: [275,265,255], ts: [[410,560],[410,560],[380,540]], A: [23,23,22],
-    chem: { c:0.24, si:0.55, mn:1.6, p:0.045, s:0.045, n:0.014 } },
-  S355: { ys: [355,345,335], ts: [[470,630],[470,630],[450,600]], A: [22,22,21],
-    chem: { c:0.24, si:0.55, mn:1.6, p:0.045, s:0.045, n:0.014 } },
-  S460: { ys: [460,440,420], ts: [[550,720],[550,720],[530,700]], A: [20,20,19],
-    chem: { c:0.22, si:0.55, mn:1.6, p:0.045, s:0.045, n:0.014 } },
-  S500: { ys: [500,480,460], ts: [[580,760],[580,760],[550,750]], A: [18,18,17],
-    chem: { c:0.23, si:0.55, mn:1.6, p:0.045, s:0.045, n:0.014 } }
+const steels = {
+  S235JR: {
+    mech: { y16: 235, y40: 225, y63: 215, rm: [360, 510], a: 26 },
+    chem: { c: 0.22, si: 0.55, mn: 1.6, p: 0.045, s: 0.045, n: 0.014 }
+  },
+  S275JR: {
+    mech: { y16: 275, y40: 265, y63: 255, rm: [410, 560], a: 23 },
+    chem: { c: 0.24, si: 0.55, mn: 1.6, p: 0.045, s: 0.045, n: 0.014 }
+  },
+  S355JR: {
+    mech: { y16: 355, y40: 345, y63: 335, rm: [470, 630], a: 22 },
+    chem: { c: 0.24, si: 0.55, mn: 1.6, p: 0.045, s: 0.045, n: 0.014 }
+  },
+  S460JR: {
+    mech: { y16: 460, y40: 440, y63: 420, rm: [550, 720], a: 17 },
+    chem: { c: 0.22, si: 0.55, mn: 1.6, p: 0.045, s: 0.045, n: 0.014 }
+  },
+  S500J0: {
+    mech: { y16: 500, y40: 480, y63: 460, rm: [580, 760], a: 16 },
+    chem: { c: 0.23, si: 0.55, mn: 1.6, p: 0.045, s: 0.045, n: 0.014 }
+  }
 };
 
-$('#checkBtn').addEventListener('click', () => {
-  const t = +$('#thickness').value;
-  const rp = +$('#rp').value;
-  const rm = +$('#rm').value;
-  const a = +$('#a').value;
-  const chem = {
-    c: +$('#c').value, mn: +$('#mn').value,
-    si: +$('#si').value, p: +$('#p').value,
-    s: +$('#s').value, n: +$('#n').value
-  };
+function $(id) {
+  return document.getElementById(id);
+}
 
-  let idx = t <= 16 ? 0 : t <= 40 ? 1 : 2;
+function checkSteel() {
+  const thk = +$("thk").value;
+  const rp = +$("rp").value;
+  const rm = +$("rm").value;
+  const a = +$("a").value;
+  const c = +$("c").value;
+  const mn = +$("mn").value;
+  const si = +$("si").value;
+  const p = +$("p").value;
+  const s = +$("s").value;
+  const n = +$("n").value;
 
-  let match = null, msg = [], mechFail = '';
+  let resultText = "";
+  let matched = null;
 
-  for (let name in steelData) {
-    let s = steelData[name];
-    if (rp>=s.ys[idx] && rm>=s.ts[idx][0] && rm<=s.ts[idx][1] && a>=s.A[idx]) {
-      let okChem = true;
-      for (let k in s.chem) if (chem[k] > s.chem[k]) {
-        okChem = false;
-        msg.push(`❌ ${k.toUpperCase()} = ${chem[k]} (أعلى من الحد ${s.chem[k]})`);
-      }
-      if (okChem) { match = name; break; }
-    } else {
-      if (rp < s.ys[idx]) mechFail = `⚠️ Rp0.2 = ${rp} أقل من المطلوب (${s.ys[idx]})`;
-      else if (rm < s.ts[idx][0] || rm > s.ts[idx][1])
-        mechFail = `⚠️ Rm = ${rm} خارج النطاق (${s.ts[idx][0]}‑${s.ts[idx][1]})`;
-      else if (a < s.A[idx])
-        mechFail = `⚠️ A% = ${a} أقل من الحد (${s.A[idx]})`;
+  for (const [name, steel] of Object.entries(steels)) {
+    const fy =
+      thk <= 16 ? steel.mech.y16 : thk <= 40 ? steel.mech.y40 : steel.mech.y63;
+    if (
+      rp >= fy &&
+      rm >= steel.mech.rm[0] &&
+      rm <= steel.mech.rm[1] &&
+      a >= steel.mech.a &&
+      c <= steel.chem.c &&
+      mn <= steel.chem.mn &&
+      si <= steel.chem.si &&
+      p <= steel.chem.p &&
+      s <= steel.chem.s &&
+      n <= steel.chem.n
+    ) {
+      matched = name;
+      break;
     }
   }
 
-  if (match) {
-    $('#result').className='ok';
-    $('#result').textContent = `🟢 النوع: ${match}`;
-    $('#root').textContent = '';
+  if (matched) {
+    $("result").className = "ok";
+    resultText = `🟢 النوع المتوقع: ${matched}`;
   } else {
-    $('#result').className='err';
-    $('#result').textContent = `❌ لا يوجد تطابق.\n${mechFail}`;
-    $('#root').textContent = msg.join('\n');
+    $("result").className = "err";
+    resultText = `❌ لا يوجد تطابق مع المواصفات المدخلة`;
   }
 
-  $('#explain').textContent = '📊 تم تقييم جميع الخانات.';
-});
+  $("result").textContent = resultText;
+
+  const explain = [];
+  explain.push(`📊 التحليل الكيميائي المدخل:`);
+  explain.push(`- C: ${c}, Mn: ${mn}, Si: ${si}`);
+  explain.push(`- P: ${p}, S: ${s}, N: ${n}`);
+  $("explain").textContent = explain.join("\n");
+
+  const root = [];
+  if (rp < 200) root.push("- حد الخضوع منخفض جدًا");
+  if (rm < 350) root.push("- مقاومة الشد منخفضة");
+  if (a < 15) root.push("- الاستطالة ضعيفة");
+
+  $("root").textContent = root.length
+    ? `🔴 أسباب فشل مطابقة:\n${root.join("\n")}`
+    : "";
+}
+
+$("checkBtn").addEventListener("click", checkSteel);
