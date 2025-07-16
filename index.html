@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -6,13 +7,14 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h2>🔍 تحديد نوع الصلب + تحليل الأسباب</h2>
+  <h2>🔍 تحليل نوع الصلب + التحقق من الشروط</h2>
 
   <section>
     <h3>✅ التحليل الميكانيكي:</h3>
     <label>التخانة (مم): <input type="number" id="thickness" /></label>
     <label>Rp0.2 (MPa): <input type="number" id="rp" /></label>
     <label>Rm (MPa): <input type="number" id="rm" /></label>
+    <label>A% (الاستطالة): <input type="number" id="a" /></label>
   </section>
 
   <section>
@@ -23,12 +25,12 @@
     <label>P%: <input type="number" step="0.001" id="p" /></label>
     <label>S%: <input type="number" step="0.001" id="s" /></label>
     <label>N%: <input type="number" step="0.001" id="n" /></label>
-    <label>Cu%: <input type="number" step="0.001" id="cu" /></label>
   </section>
 
   <button id="checkBtn">اعرف نوع الصلب</button>
 
   <div id="result"></div>
+  <div id="root"></div>
   <div id="explain"></div>
 
   <script src="script.js"></script>
